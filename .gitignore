@@ -1,0 +1,9 @@
+#过滤IDE配置文件
+.idea/
+
+#过滤python中间文件
+*/__pycache__/
+*.py[cod]
+
+#过滤临时数据
+data/
