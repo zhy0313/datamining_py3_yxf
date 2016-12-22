@@ -497,8 +497,8 @@ def test():
     #test_me()
 
 if __name__ == '__main__':
-    BASE_DIR = os.path.dirname(os.path.realpath(__file__))  # 基础路径
-    TEST_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data')  # 测试路径
+    BASE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data')  # 基础路径
+    TEST_DIR = os.path.join(BASE_DIR, 'test')  # 测试路径
     print("Base dir: ", BASE_DIR)
     print("Test dir: ", TEST_DIR)
     if os.path.exists(TEST_DIR):  # 如果已存在测试路径，就清除
