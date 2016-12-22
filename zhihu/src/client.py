@@ -9,9 +9,10 @@
 """
 
 import os
+import re
 import time
 import requests  # 更好的第三方网络库
-import src.zhihu.base as base
+import zhihu.src.base as base
 
 
 class Client:
@@ -30,7 +31,7 @@ class Client:
     # ===== login staff =====
 
     @staticmethod
-    def get_captcha():
+    def get_captcha(cookie_first):
         """
         获取验证码数据。
         :return: 验证码图片数据。
@@ -40,8 +41,14 @@ class Client:
             'r': str(int(time.time() * 1000)),
             'type': 'login',
         }
-        r = requests.get(url=base.Captcha_URL, params=params, headers=base.Default_Header)
-        return r.content
+        r = requests.get(url=base.Captcha_URL, params=params, cookies=cookie_first, headers=base.Default_Header)
+        with open('captcha.png', 'wb') as f:
+            f.write(r.content)
+            f.close()
+        print(u'请到 %s 目录找到captcha.png手动输入' % os.path.abspath('captcha.png'))
+        print("Please input the captcha:")
+        captcha = input()
+        return captcha
 
     def login_with_cookies(self):
         """
@@ -55,16 +62,57 @@ class Client:
         with open('zhihu.html', 'w', encoding='utf-8') as f:
             f.write(r.text)
 
-    def login_in_terminal(self):  # 暂时不管
-        r = requests.get(url=base.Zhihu_Login, headers=base.Default_Header)
-        cookie_response = dict(r.cookies)
-        print(str(cookie_response))
-        with open(self.Cookie_File, 'w', encoding='utf-8') as f:
-            for i in cookie_response:
+    def login_in_terminal(self):  # 网络抓包防止网站故意刷新，只能用firefox浏览器
+        r1 = requests.get(url=base.Zhihu_URL, headers=base.Default_Header)  # 初次访问建立初始cookie
+        cookie_first = dict(r1.cookies)
+        with open(self.Cookie_File, 'w', encoding='utf-8') as f:  # 把对象逐条写入文件
+            for i in cookie_first:
                 f.write(i)
                 f.write('=')
-                f.write(cookie_response[i])
+                f.write(cookie_first[i])
                 f.write('; ')
+        with open(self.Cookie_File, 'rb+') as f:  # 在文件末尾去掉无效字符。文件指针只能在b二进制模式下使用
+            f.read()
+            f.seek(-2, 2)  # 定位到文件末尾倒数第二个字符
+            f.truncate()  # 只保留指针位置之前的字符
+            f.close()
+        try:
+            _xsrf = cookie_first['_xsrf']
+        except:
+            print(u'未知错误，cookie中的_xsrf项未找到')
+            _xsrf = ''
+        print("Please input your account:")
+        account = input()
+        print("Please input your password:")
+        password = input()
+        if re.match(base.re_phone_num_pattern, account):
+            login_url = base.Zhihu_Login_Phone
+            post_data = {
+                '_xsrf': _xsrf,
+                'password': password,
+                'remember_me': 'true',
+                'phone_num': account,
+                'captcha': self.get_captcha(cookie_first)
+            }
+        else:
+            login_url = base.Zhihu_Login_Email
+            post_data = {
+                '_xsrf': _xsrf,
+                'password': password,
+                'remember_me': 'true',
+                'email': account,
+                'captcha': self.get_captcha(cookie_first)
+            }
+        print(str(post_data))
+        r2 = requests.post(url=login_url, cookies=cookie_first, data=post_data, headers=base.Data_Header)
+        cookie_response = dict(r2.cookies)
+        self.set_cookie(cookie_first, cookie_response)
+        login_code = eval(r2.text)
+        if login_code["r"] == 0:
+            print(login_code['msg'])
+            self.login_with_cookies()
+        else:
+            print(login_code)
 
     def get_cookie(self):
         cookies = {}
@@ -154,23 +202,3 @@ class Client:
     #     self.cookie.post = self.cookie.original_post
     #     del self.cookie.original_get
     #     del self.cookie.original_post
-    #
-    # # ===== getter staff ======
-    #
-    # def me(self):
-    #     """
-    #     获取使用特定 cookies 的 Me 实例
-    #     :return: cookies对应的Me对象
-    #     :rtype: Me
-    #     """
-    #     #from .me import Me
-    #     headers = dict(base.Default_Header)
-    #     headers['Host'] = 'zhuanlan.zhihu.com'
-    #     res = self.cookie.get(base.Get_Me_Info_Url, headers=headers)
-    #     json_data = res.json()
-    #     url = json_data['profileUrl']
-    #     name = json_data['name']
-    #     motto = json_data['bio']
-    #     photo = json_data['avatar']['template'].format(
-    #         id=json_data['avatar']['id'], size='r')
-    #     #return Me(url, name, motto, photo, cookie=self.cookie)

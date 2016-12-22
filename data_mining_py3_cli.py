@@ -42,19 +42,19 @@ def menu1():
         try:
             s1 = int(input("Select:"))
             if s1 == 1:
-                call("win","python test/test_douban/test_douban.py")
+                call("win","python douban/test/test_douban.py")
                 pass
             elif s1 == 2:
-                call("win","python test/test_zhihu/test_zhihu.py")
+                call("win","python zhihu/test/test_zhihu.py")
                 pass
             elif s1 == 3:
-                call("win","python test/test_baidu_tieba/test_baidu_tieba.py")
+                call("win","python baidu_tieba/test/test_baidu_tieba.py")
                 pass
             elif s1 == 4:
-                call("win","python test/test_weibo/test_weibo.py")
+                call("win","python weibo/test/test_weibo.py")
                 pass
             elif s1 == 5:
-                call("win","python test/test_wechat/test_wechat.py")
+                call("win","python wechat/test/test_wechat.py")
                 pass
             elif s1 == 6:
                 menu2()  # 调用菜单2
@@ -81,13 +81,13 @@ def menu2():
         try:
             s2 = int(input("Select:"))
             if s2 == 1:
-                call("win", "python test/test/test.py")
+                call("win", "python test/test.py")
                 pass
             elif s2 == 2:
-                call("win", "python test/test/tic-tac-toe_game.py")
+                call("win", "python test/tic-tac-toe_game.py")
                 pass
             elif s2 == 3:
-                call("win", "python test/test/rabbit_game.py")
+                call("win", "python test/rabbit_game.py")
                 pass
             elif s2 == 4:
                 break  # 跳出循环即返回菜单1

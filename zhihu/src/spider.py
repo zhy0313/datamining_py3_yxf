@@ -8,34 +8,7 @@
         By Yanxingfei(1139),2016.08.10
 """
 
-import urllib.request, urllib.parse  # 网络请求，网址解析
-
-
-class Spider:
-    def get(self, _url):
-        # 请求网页到缓存
-        try:
-            _page = urllib.request.urlopen(_url, timeout=10)
-        except IOError:
-            req = urllib.request.Request(_url, Spider.headers)
-            _page = urllib.request.urlopen(req, timeout=10)
-        return _page
-
-    def post(self, _url):
-        pass
-
-    def login(self, _url, _username, _password):
-        values = {
-            'act': 'login',
-            'user': _username,
-            'pwd': _password}
-        data = urllib.parse.urlencode(values)
-        req = urllib.request.Request(_url, data, Spider.headers)
-        _page = urllib.request.urlopen(req, timeout=10)
-        return _page
-
-    def use_cookie(self):
-        pass
+import requests
 
 
 class _Anonymous:

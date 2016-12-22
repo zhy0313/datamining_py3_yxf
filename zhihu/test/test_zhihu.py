@@ -11,19 +11,23 @@ import os  # 系统命令
 import sys  # python设置
 import shutil  # 高级文件操作
 from datetime import datetime  # 日期时间
-sys.path.append(os.getcwd())  # 添加工程目录到path环境变量
-import src.zhihu.base as base
-import src.zhihu.client as client
-import src.zhihu.filter as filter
-import src.zhihu.spider as spider
-import src.common.analyze as analyze
-import src.common.save as save
-import src.common.show as show
+
+sys.path.append(os.getcwd())  # 添加工程根目录到path环境变量
+
+import zhihu.src.base as base
+import zhihu.src.client as client
+import zhihu.src.filter as filter
+import zhihu.src.spider as spider
+import common.src.analyze as analyze
+import common.src.save as save
+import common.src.show as show
 
 
 def test_question():
-    url = 'http://www.zhihu.com/question/24825703'
+    # 给出一个特定的问题
+    url = 'https://www.zhihu.com/question/21373902'
     question = spider.Question(url)
+    # 大学毕业是去大城市好还是回小城市好？
 
     # 获取该问题的题目
     print(question.title())
@@ -475,34 +479,35 @@ def test_question():
 
 
 def test():
+    print('执行测试内容。')
     #test_question()
+    #test_questions()
     #test_answer()
+    #test_answers()
     #test_people()
+    #test_peoples()
     #test_collection()
+    #test_collections()
     #test_column()
-    #test_post()
+    #test_columns()
     #test_topic()
+    #test_topics()
     #test_anonymous()
     #test_proxy()
     #test_me()
-    print('执行测试内容。')
 
 if __name__ == '__main__':
-    BASE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../data/zhihu')  # 基础路径采用本文件上两级所在的路径
-    TEST_DIR = os.path.join(BASE_DIR, 'test')  # 测试路径
-
+    BASE_DIR = os.path.dirname(os.path.realpath(__file__))  # 基础路径
+    TEST_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data')  # 测试路径
     print("Base dir: ", BASE_DIR)
     print("Test dir: ", TEST_DIR)
-
     if os.path.exists(TEST_DIR):  # 如果已存在测试路径，就清除
         print("Cleaning...", end='')
-        shutil.rmtree(TEST_DIR)  # 清除test目录下所有的文件和目录
+        shutil.rmtree(TEST_DIR)  # 清除data目录下所有的文件和目录
         print("Done")
     else:
         print("Test dir not exist.")
-
     os.chdir(BASE_DIR)  # 进入基础路径
-
     print("Making test dir...", end='')  # 生成测试路径
     os.mkdir(TEST_DIR)
     print("Done", end="\n")
@@ -512,9 +517,7 @@ if __name__ == '__main__':
     print("Done", end="\n\n")
 
     print("===== test start =====")
-
     import timeit  # 计时相关
-
     try:  # 调用test()进入测试，直到测试完成
         time = timeit.timeit('test()', setup='from __main__ import test', number=1)
         print('===== test passed =====')
