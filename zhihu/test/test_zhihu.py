@@ -10,155 +10,155 @@
 import os  # 系统命令
 import sys  # python设置
 import shutil  # 高级文件操作
+import timeit  # 计时相关
+import random  # 随机
 from datetime import datetime  # 日期时间
 
 sys.path.append(os.getcwd())  # 添加工程根目录到path环境变量
 
 import zhihu.src.base as base
 import zhihu.src.client as client
-import zhihu.src.filter as filter
 import zhihu.src.spider as spider
-import common.src.analyze as analyze
-import common.src.save as save
-import common.src.show as show
+import zhihu.src.filter as filter
+import zhihu.src.saver as saver
+import zhihu.src.analyzer as analyzer
+import zhihu.src.show as show
 
 
-def test_question():
+def test_question(url):
     # 给出一个特定的问题
-    url = 'https://www.zhihu.com/question/21373902'
     question = spider.Question(url)
-    # 大学毕业是去大城市好还是回小城市好？
 
     # 获取该问题的题目
-    print(question.title())
-    # 亲密关系之间要说「谢谢」吗？
+    print(question.title)
+    # 大学毕业是去大城市好还是回小城市好？
 
     # 获取该问题的详细描述
-    print(question.details())
-    # 从小父母和大家庭里，.......什么时候不该说"谢谢”？？
+    print(question.details)
+    #
 
     # 获取回答个数
     print(question.answer_num)
-    # 630
+    # 983
 
     # 获取关注该问题的人数
     print(question.follower_num)
-    # 4326
+    # 17365
 
-    # 获取关注问题的用户
-    for _, follower in zip(range(10), question.followers):
-        print(follower.name)
-    # J Drop
-    # 熊猫
-    # Steve He
-    # ...
+    # # 获取关注问题的用户
+    # for _, follower in zip(range(10), question.followers):
+    #     print(follower.name)
+    # # J Drop
+    # # 熊猫
+    # # Steve He
+    # # ...
 
-    # 获取该问题所属话题
-    for topic in question.topics:
-        print(topic.name)
-    # '心理学', '恋爱', '社会', '礼仪', '亲密关系'
+    # # 获取该问题所属话题
+    # for topic in question.topics:
+    #     print(topic.name)
+    # # '心理学', '恋爱', '社会', '礼仪', '亲密关系'
 
-    # 获取排名第一的回答的点赞数
-    print(question.top_answer.upvote_num)
-    # 197
+    # # 获取排名第一的回答的点赞数
+    # print(question.top_answer.upvote_num)
+    # # 197
+    #
+    # # 获取排名前十的十个回答的点赞数
+    # for answer in question.top_i_answers(10):
+    #     print(answer.people.name, answer.upvote_num, answer.people.motto)
+    # # 49
+    # # 89
+    # # 425
+    # # ...
 
-    # 获取排名前十的十个回答的点赞数
-    for answer in question.top_i_answers(10):
-        print(answer.people.name, answer.upvote_num, answer.people.motto)
-    # 49
-    # 89
-    # 425
-    # ...
-
-    # 获取提问时间
-    ctime = question.creation_time
-    print(ctime)
-    assert ctime == datetime.strptime('2014-08-12 17:58:07', "%Y-%m-%d %H:%M:%S")
-
-    # 获取最后编辑时间
-    last_edit_time = question.last_edit_time
-    print(last_edit_time)
-    assert last_edit_time >= datetime.strptime('2015-04-01 00:39:21', "%Y-%m-%d %H:%M:%S")
-
-    # 获取提问者
-    assert question.people is spider.ANONYMOUS  # 匿名用户
-    question = spider.Question('https://www.zhihu.com/question/38531356')
-    assert question.people.name == '杨捷'
-    assert question.people.url == 'https://www.zhihu.com/people/yangjiePro/'
-
-    question.refresh()
-
-    # test again
-    print(question.title)
-    print(question.details)
-    print(question.answer_num)
-    print(question.follower_num)
-    for _, follower in zip(range(10), question.followers):
-        print(follower.name)
-    print(question.topics)
-    print(question.last_edit_time)
-
-    # with sort parameter, repeat above tests
-
-    url = 'https://www.zhihu.com/question/24825703?sort=created'
-    question = spider.Question(url)
-    print(question.title)
-    print(question.details)
-    print(question.answer_num)
-    print(question.follower_num)
-    for _, follower in zip(range(10), question.followers):
-        print(follower.name)
-    print(question.topics)
-    print(question.top_answer.upvote_num)
-    for answer in question.top_i_answers(10):
-        print(answer.people.name, answer.upvote_num, answer.people.motto)
-    ctime = question.creation_time
-    print(ctime)
-    assert ctime == datetime.strptime('2014-08-12 17:58:07', "%Y-%m-%d %H:%M:%S")
-    last_edit_time = question.last_edit_time
-    print(last_edit_time)
-    assert last_edit_time >= datetime.strptime('2015-04-01 00:39:21', "%Y-%m-%d %H:%M:%S")
-    assert question.people is spider.ANONYMOUS
-    question = spider.Question('https://www.zhihu.com/question/38531356')
-    assert question.people.name == '杨捷'
-    assert question.people.url == 'https://www.zhihu.com/people/yangjiePro/'
-
-    question.refresh()
-
-    # test again
-    print(question.title)
-    print(question.details)
-    print(question.answer_num)
-    print(question.follower_num)
-    for _, follower in zip(range(10), question.followers):
-        print(follower.name)
-    print(question.topics)
-    print(question.last_edit_time)
-
-    # test fetching all sorted answers
-    question = spider.Question('https://www.zhihu.com/question/27459050?sort=created')
-    count = 0
-    for answer in question.answers:
-        count += 1
-        print(answer.people.name, answer.upvote_num, answer.people.motto)
-    assert count >= 83
-
-    assert question.deleted is False
-
-    # test deleted question
-    url = 'https://www.zhihu.com/question/39416522'
-    question = spider.Question(url)
-    assert question.deleted is True
-
-    # test question without answer
-    url = 'https://www.zhihu.com/question/36358828?sort=created'
-    question = spider.Question(url)
-    assert len(list(question.answers)) == 0
-
-    # test answer in one page(< 20)
-    url = 'https://www.zhihu.com/question/28330796?sort=created'
-    question = spider.Question(url)
-    assert len(list(question.answers)) >= 7
+    # # 获取提问时间
+    # ctime = question.creation_time
+    # print(ctime)
+    # assert ctime == datetime.strptime('2014-08-12 17:58:07', "%Y-%m-%d %H:%M:%S")
+    #
+    # # 获取最后编辑时间
+    # last_edit_time = question.last_edit_time
+    # print(last_edit_time)
+    # assert last_edit_time >= datetime.strptime('2015-04-01 00:39:21', "%Y-%m-%d %H:%M:%S")
+    #
+    # # 获取提问者
+    # assert question.people is spider.ANONYMOUS  # 匿名用户
+    # question = spider.Question('https://www.zhihu.com/question/38531356')
+    # assert question.people.name == '杨捷'
+    # assert question.people.url == 'https://www.zhihu.com/people/yangjiePro/'
+    #
+    # question.refresh()
+    #
+    # # test again
+    # print(question.title)
+    # print(question.details)
+    # print(question.answer_num)
+    # print(question.follower_num)
+    # for _, follower in zip(range(10), question.followers):
+    #     print(follower.name)
+    # print(question.topics)
+    # print(question.last_edit_time)
+    #
+    # # with sort parameter, repeat above tests
+    #
+    # url = 'https://www.zhihu.com/question/24825703?sort=created'
+    # question = spider.Question(url)
+    # print(question.title)
+    # print(question.details)
+    # print(question.answer_num)
+    # print(question.follower_num)
+    # for _, follower in zip(range(10), question.followers):
+    #     print(follower.name)
+    # print(question.topics)
+    # print(question.top_answer.upvote_num)
+    # for answer in question.top_i_answers(10):
+    #     print(answer.people.name, answer.upvote_num, answer.people.motto)
+    # ctime = question.creation_time
+    # print(ctime)
+    # assert ctime == datetime.strptime('2014-08-12 17:58:07', "%Y-%m-%d %H:%M:%S")
+    # last_edit_time = question.last_edit_time
+    # print(last_edit_time)
+    # assert last_edit_time >= datetime.strptime('2015-04-01 00:39:21', "%Y-%m-%d %H:%M:%S")
+    # assert question.people is spider.ANONYMOUS
+    # question = spider.Question('https://www.zhihu.com/question/38531356')
+    # assert question.people.name == '杨捷'
+    # assert question.people.url == 'https://www.zhihu.com/people/yangjiePro/'
+    #
+    # question.refresh()
+    #
+    # # test again
+    # print(question.title)
+    # print(question.details)
+    # print(question.answer_num)
+    # print(question.follower_num)
+    # for _, follower in zip(range(10), question.followers):
+    #     print(follower.name)
+    # print(question.topics)
+    # print(question.last_edit_time)
+    #
+    # # test fetching all sorted answers
+    # question = spider.Question('https://www.zhihu.com/question/27459050?sort=created')
+    # count = 0
+    # for answer in question.answers:
+    #     count += 1
+    #     print(answer.people.name, answer.upvote_num, answer.people.motto)
+    # assert count >= 83
+    #
+    # assert question.deleted is False
+    #
+    # # test deleted question
+    # url = 'https://www.zhihu.com/question/39416522'
+    # question = spider.Question(url)
+    # assert question.deleted is True
+    #
+    # # test question without answer
+    # url = 'https://www.zhihu.com/question/36358828?sort=created'
+    # question = spider.Question(url)
+    # assert len(list(question.answers)) == 0
+    #
+    # # test answer in one page(< 20)
+    # url = 'https://www.zhihu.com/question/28330796?sort=created'
+    # question = spider.Question(url)
+    # assert len(list(question.answers)) >= 7
 
 
 # def test_answer():
@@ -480,7 +480,7 @@ def test_question():
 
 def test():
     print('执行测试内容。')
-    #test_question()
+    test_question('https://www.zhihu.com/question/21373902')
     #test_questions()
     #test_answer()
     #test_answers()
@@ -497,37 +497,32 @@ def test():
     #test_me()
 
 if __name__ == '__main__':
+    Ua = {'User-Agent': random.choice(base.UA_Pool)}  # 随机UA
+    Cookies_File = 'cookies.txt'
+
     BASE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data')  # 基础路径
-    TEST_DIR = os.path.join(BASE_DIR, 'test')  # 测试路径
     print("Base dir: ", BASE_DIR)
-    print("Test dir: ", TEST_DIR)
+    os.chdir(BASE_DIR)  # 进入基础路径
+    client = client.Client(Ua, Cookies_File)  # 生成客户端实例，使session会话以及cookies常驻内存
+    TEST_DIR = os.path.join(BASE_DIR, 'test')  # 测试路径
     if os.path.exists(TEST_DIR):  # 如果已存在测试路径，就清除
         print("Cleaning...", end='')
-        shutil.rmtree(TEST_DIR)  # 清除data目录下所有的文件和目录
+        #shutil.rmtree(TEST_DIR)  # 清除data目录下所有的文件和目录
+        #os.mkdir(TEST_DIR)
         print("Done")
     else:
-        print("Test dir not exist.")
-    os.chdir(BASE_DIR)  # 进入基础路径
-    print("Making test dir...", end='')  # 生成测试路径
-    os.mkdir(TEST_DIR)
-    print("Done", end="\n")
-    print("Client:")
-    client.Client()  # 执行客户端类进行登录
-    os.chdir(TEST_DIR)  # 进入测试路径
+        os.mkdir(TEST_DIR)
+    os.chdir(TEST_DIR)
+    print("Test dir: ", TEST_DIR)
     print("Done", end="\n\n")
 
     print("===== test start =====")
-    import timeit  # 计时相关
     try:  # 调用test()进入测试，直到测试完成
         time = timeit.timeit('test()', setup='from __main__ import test', number=1)
         print('===== test passed =====')
-        print('no error happen')
         print('time used: {0} ms'.format(time * 1000))  # 计时
     except Exception as e:
         print('===== test failed =====')
         raise e
     finally:
-        os.chdir(BASE_DIR)
-        print("Cleaning...", end='')
-        #shutil.rmtree(TEST_DIR)
         print("Done")

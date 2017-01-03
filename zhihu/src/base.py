@@ -8,7 +8,34 @@
         By Yanxingfei(1139),2016.08.10
 """
 
+# build-in
 import re
+
+# requirements
+import termcolor
+
+UA_Pool = [  # 20条UA记录
+    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_1) AppleWebKit/602.2.14 (KHTML, like Gecko) Version/10.0.1 Safari/602.2.14',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:50.0) Gecko/20100101 Firefox/50.0',
+    'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:50.0) Gecko/20100101 Firefox/50.0',
+    'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.100 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
+    'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:50.0) Gecko/20100101 Firefox/50.0',
+    'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.99 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/602.2.14 (KHTML, like Gecko) Version/10.0.1 Safari/602.2.14',
+    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.71 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:49.0) Gecko/20100101 Firefox/49.0',
+    'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:49.0) Gecko/20100101 Firefox/49.0',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393',
+]
 
 Default_Header = {  # 不包含cookie的请求头的内容。user-agent和referer是必须自定义的
     'Host': 'www.zhihu.com',
@@ -16,21 +43,6 @@ Default_Header = {  # 不包含cookie的请求头的内容。user-agent和refere
     'Cache-Control': 'max-age=0',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'Upgrade-Insecure-Requests': '1',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36',
-    'Referer': 'https://www.zhihu.com/',
-    'Accept-Encoding': 'gzip, deflate, sdch',
-    'Accept-Language': 'zh-CN,zh;q=0.8'
-}
-
-Data_Header = {  # 用于请求数据信息
-    'Host': 'www.zhihu.com',
-    'Connection': 'keep-alive',
-    'Cache-Control': 'max-age=0',
-    'Accept': '*/*',
-    'Content-Length': '217',
-    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-    'Upgrade-Insecure-Requests': '1',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36',
     'Referer': 'https://www.zhihu.com/',
     'Accept-Encoding': 'gzip, deflate, sdch',
     'Accept-Language': 'zh-CN,zh;q=0.8'
@@ -50,12 +62,42 @@ Topic_Id = ''
 Question_Id = ''  # 问题id
 Answer_Id = ''
 
-
-# 网址解析
+# 网址解析规则
 re_phone_num_pattern = re.compile(r'^1\d{10}$')  # 匹配手机号
 re_group_url = re.compile(r'')
-re_topic_url = re.compile(r'')
+re_topic_url = re.compile(r'^https?://www\.zhihu\.com/topic/(\d+)/?$')
 re_author_url = re.compile(r'')
+re_answer_url = re.compile(r'')
+re_question_url = re.compile(r'^https?://www\.zhihu\.com/question/\d+/?')  # 匹配问题链接。包括默认链接和按时间排序链接
+
+
+class Logging:
+    flag = True
+
+    @staticmethod
+    def error(msg):
+        if Logging.flag:
+            print("".join( [termcolor.colored("ERROR", "red"), ": ", termcolor.colored(msg, "white") ] ))
+
+    @staticmethod
+    def warn(msg):
+        if Logging.flag:
+            print("".join( [termcolor.colored("WARN", "yellow"), ": ", termcolor.colored(msg, "white") ] ))
+
+    @staticmethod
+    def info(msg):
+        if Logging.flag:
+            print("".join( [termcolor.colored("INFO", "magenta"), ": ", termcolor.colored(msg, "white") ] ))
+
+    @staticmethod
+    def debug(msg):
+        if Logging.flag:
+            print("".join( [termcolor.colored("DEBUG", "magenta"), ": ", termcolor.colored(msg, "white") ] ))
+
+    @staticmethod
+    def success(msg):
+        if Logging.flag:
+            print("".join(  [ termcolor.colored("SUCCES", "green"), ": ", termcolor.colored(msg, "white") ] ))
 
 # 知乎网站内容模型
 Zhihu_Model = {

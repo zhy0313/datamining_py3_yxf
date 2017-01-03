@@ -81,7 +81,7 @@ def menu2():
         try:
             s2 = int(input("Select:"))
             if s2 == 1:
-                call("win", "python test/test.py")
+                call("win", "rasdial 校园网宽带 18861824721@cmcc 252513")  # 宽带连接。断开：rasdial 校园网宽带 /disconnect
                 pass
             elif s2 == 2:
                 call("win", "python test/tic-tac-toe_game.py")
