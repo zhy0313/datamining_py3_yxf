@@ -1,11 +1,12 @@
 setuptools
+pip
+pyodbc
+selenium
 bs4
 requests
-selenium
 termcolor
 html5lib
 NumPy
-.lib/lxml-3.7.1-cp34-cp34m-win_amd64.whl
-.lib/SciPy
-.lib/pillow
+lxml
+pillow
 scrapy

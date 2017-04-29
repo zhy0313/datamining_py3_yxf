@@ -3,35 +3,35 @@
 
 """
     Note:
-        爬取网页。
-        模拟浏览器浏览过程。
+        封装爬虫策略，供test_zhihu.py调用。
         By Yanxingfei(1139),2016.08.10
 """
 
 # build-in
 import re
 import sys
-import http.cookiejar as cookielib
-
-# requirements
-import requests
-from bs4 import BeautifulSoup
+import time
 
 # module
+import common.db as db
+import common.data as data
 import zhihu.src.base as base
 import zhihu.src.client as client
 
 
+# 使用client浏览器
+browser = client.browser
+# 使用数据库连接
+database = db.SqlServer('127.0.0.1', '1433', 'sa', '201212', 'zhihu')
+
+
 class Question:
-    def __init__(self, url, title=None, session=None):
+    def __init__(self, url):
         if not re.match(base.re_question_url, url):
             raise ValueError("\"" + url + "\"" + " : it isn't a question url.")
         else:
             self._url = url
-        if session is None:
-            self._session = client.session
-        if title is None:
-            self._title = ''
+        self._title = ''
         self._answer_num = ''
         self._follower_num = ''
         self._id = int(re.match(r'.*/(\d+)', self._url).group(1))
@@ -39,140 +39,128 @@ class Question:
         self._creation_time = ''
         self._logs = None
         self._deleted = None
-        self._html = self.get_content()
-        self._soup = BeautifulSoup(self._html,'html5lib')
-
-    def get_content(self):
-        if self._url.endswith('/'):
-            resp = self._session.get(self._url[:-1])
-        else:
-            resp = self._session.get(self._url)
-        return resp.content
+        browser.get(url)
+        browser.get_screenshot_as_file('question.png')
 
     @property
     def url(self):
         # always return url like https://www.zhihu.com/question/1234/
         url = re.match(base.re_question_url, self._url).group()
-        return url if url.endswith('/') else url + '/'
+        return "\'" + url + "\'" if url.endswith('/') else "\'" + url + '/'+ "\'"
 
     @property
     def id(self):
-        """获取问题id（网址最后的部分）.
-
-        :return: 问题id
-        :rtype: int
-        """
+        # 获取问题id（网址最后的部分）.
         return self._id
 
     @property
-    def qid(self):
-        """获取问题内部id（用不到就忽视吧）
-
-        :return: 问题内部id
-        :rtype: int
-        """
-        return int(self._soup.find('div', id='zh-question-detail')['data-resourceid'])
-
-    @property
-    def xsrf(self):
-        """获取知乎的反xsrf参数（用不到就忽视吧~）
-
-        :return: xsrf参数
-        :rtype: str
-        """
-        return self._soup.find('input', attrs={'name': '_xsrf'})['value']
-
-    @property
-    def html(self):
-        """获取页面源码.
-
-        :return: 页面源码
-        :rtype: str
-        """
-        return self._soup.prettify()
-
-    @property
     def title(self):
-        """获取问题标题.
-
-        :return: 问题标题
-        :rtype: str
-        """
-        return self._soup.find('h2', class_='zm-item-title').text.replace('\n', '')
+        # 获取问题标题.
+        try:
+            return "\'" + browser.find_element_by_css_selector(
+                '#root > div > main > div > div:nth-child(1) > div.QuestionHeader > div.QuestionHeader-content > div.QuestionHeader-main > h1'
+            ).text + "\'"
+        except:
+            return "\'" + 'invalid title' + "\'"
 
     @property
     def details(self):
-        """获取问题详细描述，目前实现方法只是直接获取文本，效果不满意……等更新.
-
-        :return: 问题详细描述
-        :rtype: str
-        """
-        return self._soup.find("div", id="zh-question-detail").div.text
+        # 获取问题详细描述，目前实现方法只是直接获取文本，效果不满意……等更新.
+        try:
+            return "\'" + browser.find_element_by_css_selector(
+                '#root > div > main > div > div:nth-child(1) > div.QuestionHeader > div.QuestionHeader-content > div.QuestionHeader-main > div.QuestionHeader-detail > div > div > span'
+            ).text + "\'"
+        except:
+            return "\'" + 'invalid details' + "\'"
 
     @property
     def answer_num(self):
-        """获取问题答案数量.
-
-        :return: 问题答案数量
-        :rtype: int
-        """
-        answer_num_block = self._soup.find('h3', id='zh-question-answer-num')
-        # 当0人回答或1回答时，都会找不到 answer_num_block，
-        # 通过找答案的赞同数block来判断到底有没有答案。
-        # （感谢知乎用户 段晓晨 提出此问题）
-        if answer_num_block is None:
-            if self._soup.find('span', class_='count') is not None:
-                return 1
-            else:
-                return 0
-        return int(answer_num_block['data-num'])
+        # 获取问题答案数量.
+        str = browser.find_element_by_xpath(
+            '//*[@id="root"]/div/main/div/div[2]/div[1]/div/div[1]/div/div[1]/h4/span/text()'
+        )
+        num = re.match(base.re_number_in_double_quotes_pattern, str)
+        return int(num)
 
     @property
     def follower_num(self):
-        """获取问题关注人数.
-
-        :return: 问题关注人数
-        :rtype: int
-        """
-        follower_num_block = self._soup.find('div', class_='zg-gray-normal')
+        # 获取问题关注人数.
+        num = browser.find_element_by_css_selector(
+            '#root > div > main > div > div:nth-child(1) > div.QuestionHeader > div.QuestionHeader-content > div.QuestionHeader-side > div > div > div > button > div.NumberBoard-value'
+        ).text
         # 无人关注时 找不到对应block，直接返回0 （感谢知乎用户 段晓晨 提出此问题）
-        if follower_num_block is None or follower_num_block.strong is None:
+        if num is None:
             return 0
-        return int(follower_num_block.strong.text)
+        return int(num)
+
+    @property
+    def viewed_num(self):
+        # 获取问题浏览次数.
+        num = browser.find_element_by_css_selector(
+            '#root > div > main > div > div:nth-child(1) > div.QuestionHeader > div.QuestionHeader-content > div.QuestionHeader-side > div > div > div > div.NumberBoard-item > div.NumberBoard-value'
+        ).text
+        return int(num)
 
     @property
     def topics(self):
-        """获取问题所属话题.
+        # 获取问题所属话题.
+        topics = browser.find_element_by_css_selector(
+            '#root > div > main > div > div:nth-child(1) > div.QuestionHeader > div.QuestionHeader-content > div.QuestionHeader-main > div.QuestionHeader-topics'
+        )
+        for topic in topics:
+            yield base.Zhihu_URL + topic.div.span.a['href'], topic.div.span.a.div.div.text
 
-        :return: 问题所属话题
-        :rtype: Topic.Iterable
-        """
-        for topic in self._soup.find_all('a', class_='zm-item-tag'):
-            yield Topic(base.Zhihu_URL + topic['href'], topic.text.replace('\n', ''), session=self._session)
-
+    @property
     def followers(self):
-        pass
+        # 获取关注此问题的用户.问题: 要注意若执行过程中另外有人关注，可能造成重复获取到某些用户
+        # self._make_soup()
+        # followers_url = self.url + 'followers'
+        # for x in common_follower(followers_url, self.xsrf, self._session):
+        #     yield x
+        return
 
-    def people(self):
-        pass
+    @property
+    def author(self):
+        return
 
+    @property
     def answers(self):
-        pass
+        return
 
-    def deleted(self):
-        pass
-
+    @property
     def creation_time(self):
-        pass
+        # 问题创建时间
+        # logs = self._query_logs()
+        # time_string = logs[-1].find('div', class_='zm-item-meta').time[
+        #     'datetime']
+        # return datetime.strptime(time_string, "%Y-%m-%d %H:%M:%S")
+        return
 
+    @property
     def last_edit_time(self):
-        pass
+        # 问题最后编辑时间
+        # data = {'_xsrf': self.xsrf, 'offset': '1'}
+        # res = self._session.post(self.url + 'log', data=data)
+        # _, content = res.json()['msg']
+        # soup = BeautifulSoup(content)
+        # time_string = soup.find_all('time')[0]['datetime']
+        # return datetime.strptime(time_string, "%Y-%m-%d %H:%M:%S")
+        return
 
+    @property
     def top_answer(self):
-        pass
+        return
 
-    def refresh(self):
-        pass
+    def save(self):
+        database.check_item("question", self.id)
+        database.commit()
+        database.update(  # 对已有的id记录进行更新
+            "question",   # 表
+            "url={0}, title={1},details={2}".format(self.url, self.title, self.details),   # 要更新的字段
+            "id={0}".format(self.id)  # 根据id找到这条记录
+        )
+        database.commit()
+
 
 class Answer:
     pass
@@ -186,26 +174,49 @@ class Column:
     pass
 
 
-class Commit:
-    pass
-
-
 class Me:
     pass
 
 
-class Topic:
-    def __init__(self, url, name=None, session=None):
-        """创建话题类实例.
+class Topics:
+    def __init__(self, url=False):
+        self._root_url = url
 
-        :param url: 话题url
-        :param name: 话题名称，可选
-        :return: Topic
-        """
-        self.url = url
-        self._name = name
-        self._session = session
-        self._id = int(base.re_topic_url.match(self.url).group(1))
+    def go(self):
+        print("topics go:")
+        if self._root_url:
+            browser.get(self._root_url)
+        else:
+            # browser.get(base.Zhihu_URL + base.Zhihu_Topics_Root)
+            browser.get("file:///E:/PRIVATE-ORIGINAL/python_project/datamining_py3_yxf/zhihu/data/test/%E5%AE%8C%E6%95%B4%E8%AF%9D%E9%A2%98%E7%BB%93%E6%9E%84%20-%20%E3%80%8C%E6%A0%B9%E8%AF%9D%E9%A2%98%E3%80%8D%20-%20%E7%9F%A5%E4%B9%8E.html")
+        print("正在遍历爬取，请稍等...")
+        # self.find_load_element()
+        self.find_topic_element()
+        print("遍历完成，可以继续操作。")
+
+    def find_load_element(self):
+        try:
+            browser.find_element_by_name('load').click()
+            print("click")
+            time.sleep(5)
+            self.find_load_element()
+        except:
+            print('出错或者已经加载完成')
+            browser.get_screenshot_as_file("topics.png")
+            pass
+
+    @staticmethod
+    def find_topic_element(self):
+        try:
+            for i in browser.find_elements_by_name('topic'):
+                topic_id = i.get_attribute('data-token')
+                # topic_name = "\'" + i.text + "\'"
+                # topic_url = "\'" + base.Zhihu_URL + '/topic/' + topic_id + '/' + "\'"
+                database.check_item("topics", topic_id)
+        except Exception as e:
+            print('出错或者已经把话题保存完成')
+            raise e
+            pass
 
 
 class Anonymous:

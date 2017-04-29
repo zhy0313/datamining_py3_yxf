@@ -7,72 +7,62 @@
         By Yanxingfei(1139),2016.09.10
 """
 
+# build-in
 import os
 
 
-def call(system, command):
-    """
-    与操作系统解耦
-    :param system: 系统类型
-    :param command: 命令
-    :return:
-    """
-    if system == "win":  # windows系统下的命令
+def call(sys_type, command):  # 与操作系统解耦
+    if sys_type == "win":  # windows系统下的命令
         os.system("cmd /k " + command)
-    elif system == "unix":  # unix类系统下的命令
+    elif sys_type == "unix":  # unix类系统下的命令
         os.system(command)
 
 
-def menu1():
-    """
-    主菜单
-    :return:
-    """
+def main(sys_type):  # 主菜单
     while True:
         print('''
-            #---------MENU1--------#
-            # 1.test douban        #
+            #---------MENU---------#
+            # 1.test               #
             # 2.test zhihu         #
             # 3.test baidu tieba   #
             # 4.test weibo         #
             # 5.test wechat        #
-            # 6.test               #
-            # 7.EXIT               #
+            # 6.test douban        #
+            # 7.update proxy pool  #
+            # 8.EXIT               #
             ''')
         try:
             s1 = int(input("Select:"))
             if s1 == 1:
-                call("win","python douban/test/test_douban.py")
-                pass
+                menu1(sys_type)  # 调用次级菜单
             elif s1 == 2:
-                call("win","python zhihu/test/test_zhihu.py")
+                call(sys_type, "python zhihu/test/test_zhihu.py")
                 pass
             elif s1 == 3:
-                call("win","python baidu_tieba/test/test_baidu_tieba.py")
+                call(sys_type, "python baidu_tieba/test/test_baidu_tieba.py")
                 pass
             elif s1 == 4:
-                call("win","python weibo/test/test_weibo.py")
+                call(sys_type, "python weibo/test/test_weibo.py")
                 pass
             elif s1 == 5:
-                call("win","python wechat/test/test_wechat.py")
+                call(sys_type, "python wechat/test/test_wechat.py")
                 pass
             elif s1 == 6:
-                menu2()  # 调用菜单2
+                call(sys_type, "python douban/test/test_douban.py")
+                pass
             elif s1 == 7:
+                call(sys_type, "python common/proxy.py")
+            elif s1 == 8:
                 break  # 跳出循环即结束整个程序
         except:
-            print("Warning! You need to add a numeric value")
-            menu2()
+            print("警告！您输入的不是有效数字！")
+            pass
 
 
-def menu2():
-    """
-    次菜单
-    :return:
-    """
+def menu1(sys_type):  # 次级菜单
     while True:
         print('''
-            #---------MENU2--------#
+            #---------MENU1_1------#
             # 1.test               #
             # 2.tic-tac-toe game   #
             # 3.rabbit game        #
@@ -81,19 +71,24 @@ def menu2():
         try:
             s2 = int(input("Select:"))
             if s2 == 1:
-                call("win", "rasdial 校园网宽带 18861824721@cmcc 252513")  # 宽带连接。断开：rasdial 校园网宽带 /disconnect
-                pass
+                if sys_type == "win":
+                    call(sys_type, "rasdial 校园网宽带 18861824721@cmcc 252513")  # 宽带连接。断开：rasdial 校园网宽带 /disconnect
+                    pass
+                else:
+                    print("Warning! It's only a windows command!")
+                    pass
             elif s2 == 2:
-                call("win", "python test/tic-tac-toe_game.py")
+                call(sys_type, "python test/tic-tac-toe_game.py")
                 pass
             elif s2 == 3:
-                call("win", "python test/rabbit_game.py")
+                call(sys_type, "python test/rabbit_game.py")
                 pass
             elif s2 == 4:
                 break  # 跳出循环即返回菜单1
         except:
-            print("Warning! You need to add a numeric value")
+            print("警告！您输入的不是有效数字！")
+            pass
 
 
-if __name__ == '__main__':  # 程序入口2
-    menu1()  # 调用菜单1
+if __name__ == '__main__':  # 程序入口
+    main("win")  # 调用主菜单

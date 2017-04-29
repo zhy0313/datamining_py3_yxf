@@ -3,61 +3,39 @@
 
 """
     Note:
-        知乎测试
+        知乎数据分析主程序。
         By Yanxingfei(1139),2016.08.10
 """
 
+# build-in
 import os  # 系统命令
 import sys  # python设置
 import shutil  # 高级文件操作
 import timeit  # 计时相关
-import random  # 随机
 from datetime import datetime  # 日期时间
 
-sys.path.append(os.getcwd())  # 添加工程根目录到path环境变量
+sys.path.append(os.getcwd())  # 添加工程根目录(datamining_py3_yxf)到path环境变量
 
+# module
 import zhihu.src.base as base
 import zhihu.src.client as client
 import zhihu.src.spider as spider
-import zhihu.src.filter as filter
-import zhihu.src.saver as saver
-import zhihu.src.analyzer as analyzer
 import zhihu.src.show as show
 
 
 def test_question(url):
     # 给出一个特定的问题
     question = spider.Question(url)
-
-    # 获取该问题的题目
+    print(question.id)
+    print(question.url)
     print(question.title)
-    # 大学毕业是去大城市好还是回小城市好？
-
-    # 获取该问题的详细描述
     print(question.details)
-    #
-
-    # 获取回答个数
-    print(question.answer_num)
-    # 983
-
-    # 获取关注该问题的人数
-    print(question.follower_num)
-    # 17365
-
-    # # 获取关注问题的用户
+    # print(question.answer_num)
+    # print(question.follower_num)
+    # print(question.viewed_num)
+    # print(question.topics)
     # for _, follower in zip(range(10), question.followers):
     #     print(follower.name)
-    # # J Drop
-    # # 熊猫
-    # # Steve He
-    # # ...
-
-    # # 获取该问题所属话题
-    # for topic in question.topics:
-    #     print(topic.name)
-    # # '心理学', '恋爱', '社会', '礼仪', '亲密关系'
-
     # # 获取排名第一的回答的点赞数
     # print(question.top_answer.upvote_num)
     # # 197
@@ -65,11 +43,6 @@ def test_question(url):
     # # 获取排名前十的十个回答的点赞数
     # for answer in question.top_i_answers(10):
     #     print(answer.people.name, answer.upvote_num, answer.people.motto)
-    # # 49
-    # # 89
-    # # 425
-    # # ...
-
     # # 获取提问时间
     # ctime = question.creation_time
     # print(ctime)
@@ -85,83 +58,10 @@ def test_question(url):
     # question = spider.Question('https://www.zhihu.com/question/38531356')
     # assert question.people.name == '杨捷'
     # assert question.people.url == 'https://www.zhihu.com/people/yangjiePro/'
-    #
-    # question.refresh()
-    #
-    # # test again
-    # print(question.title)
-    # print(question.details)
-    # print(question.answer_num)
-    # print(question.follower_num)
-    # for _, follower in zip(range(10), question.followers):
-    #     print(follower.name)
-    # print(question.topics)
-    # print(question.last_edit_time)
-    #
-    # # with sort parameter, repeat above tests
-    #
-    # url = 'https://www.zhihu.com/question/24825703?sort=created'
-    # question = spider.Question(url)
-    # print(question.title)
-    # print(question.details)
-    # print(question.answer_num)
-    # print(question.follower_num)
-    # for _, follower in zip(range(10), question.followers):
-    #     print(follower.name)
-    # print(question.topics)
-    # print(question.top_answer.upvote_num)
-    # for answer in question.top_i_answers(10):
-    #     print(answer.people.name, answer.upvote_num, answer.people.motto)
-    # ctime = question.creation_time
-    # print(ctime)
-    # assert ctime == datetime.strptime('2014-08-12 17:58:07', "%Y-%m-%d %H:%M:%S")
-    # last_edit_time = question.last_edit_time
-    # print(last_edit_time)
-    # assert last_edit_time >= datetime.strptime('2015-04-01 00:39:21', "%Y-%m-%d %H:%M:%S")
-    # assert question.people is spider.ANONYMOUS
-    # question = spider.Question('https://www.zhihu.com/question/38531356')
-    # assert question.people.name == '杨捷'
-    # assert question.people.url == 'https://www.zhihu.com/people/yangjiePro/'
-    #
-    # question.refresh()
-    #
-    # # test again
-    # print(question.title)
-    # print(question.details)
-    # print(question.answer_num)
-    # print(question.follower_num)
-    # for _, follower in zip(range(10), question.followers):
-    #     print(follower.name)
-    # print(question.topics)
-    # print(question.last_edit_time)
-    #
-    # # test fetching all sorted answers
-    # question = spider.Question('https://www.zhihu.com/question/27459050?sort=created')
-    # count = 0
-    # for answer in question.answers:
-    #     count += 1
-    #     print(answer.people.name, answer.upvote_num, answer.people.motto)
-    # assert count >= 83
-    #
-    # assert question.deleted is False
-    #
-    # # test deleted question
-    # url = 'https://www.zhihu.com/question/39416522'
-    # question = spider.Question(url)
-    # assert question.deleted is True
-    #
-    # # test question without answer
-    # url = 'https://www.zhihu.com/question/36358828?sort=created'
-    # question = spider.Question(url)
-    # assert len(list(question.answers)) == 0
-    #
-    # # test answer in one page(< 20)
-    # url = 'https://www.zhihu.com/question/28330796?sort=created'
-    # question = spider.Question(url)
-    # assert len(list(question.answers)) >= 7
+    question.save()
 
 
-# def test_answer():
+def test_answer():
 #     url = 'http://www.zhihu.com/question/24825703/answer/30975949'
 #     answer = client.answer(url)
 #
@@ -273,9 +173,10 @@ def test_question(url):
 #     url = 'https://www.zhihu.com/question/28399220/answer/79799671'
 #     answer = client.answer(url)
 #     assert 0 < sum(1 for _ in answer.comments) < 30
+    pass
 
 
-# def test_people():
+def test_people():
 #     url = 'http://www.zhihu.com/people/7sdream'
 #     people = client.people(url)
 #
@@ -456,73 +357,63 @@ def test_question(url):
 #         # Python http://www.zhihu.com/topic/19552832/
 #         # 计算机 http://www.zhihu.com/topic/19555547/
 #         # 生活 http://www.zhihu.com/topic/19551147/
+    pass
 
 
-# def test_proxy():
-#     # visit http://cn-proxy.com/ to get available proxies if test failed
-# 
-#     proxy_ips = ['117.135.251.131', '117.135.251.134']
-#     client.set_proxy_pool(proxy_ips)
-#     for _ in range(5):
-#         result = client._session.get('http://httpbin.org/ip').json()
-#         assert result['origin'] in proxy_ips
-#         result = client._session.post('http://httpbin.org/post',
-#                                       data={'m': '1'}).json()
-#         assert result['form'] == {'m': '1'}
-#         assert result['origin'] in proxy_ips
-# 
-#     client.remove_proxy_pool()
-#     client.set_proxy_pool(proxy_ips, https=False)
-#     for _ in range(5):
-#         result = client._session.get('http://httpbin.org/ip').json()
-#         assert result['origin'] in proxy_ips
+def test_topics():
+    topics = spider.Topics()
+    topics.go()
 
 
 def test():
-    print('执行测试内容。')
-    test_question('https://www.zhihu.com/question/21373902')
-    #test_questions()
-    #test_answer()
-    #test_answers()
-    #test_people()
-    #test_peoples()
-    #test_collection()
-    #test_collections()
-    #test_column()
-    #test_columns()
-    #test_topic()
-    #test_topics()
-    #test_anonymous()
-    #test_proxy()
-    #test_me()
+    test_question("https://www.zhihu.com/question/21373902")
+    test_topics()  # 从某个节点处向下遍历
+    # test_answer()
+    # test_collection()
+    # test_column()
+    # test_topic()
+    # test_questions()
+    # test_answers()
+    # test_peoples()
+    # test_collections()
+    # test_columns()
+    # test_people()
 
 if __name__ == '__main__':
-    Ua = {'User-Agent': random.choice(base.UA_Pool)}  # 随机UA
-    Cookies_File = 'cookies.txt'
-
-    BASE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data')  # 基础路径
+    print("===== init directory =====")
+    BASE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../data')  # 基础路径为data目录
     print("Base dir: ", BASE_DIR)
     os.chdir(BASE_DIR)  # 进入基础路径
-    client = client.Client(Ua, Cookies_File)  # 生成客户端实例，使session会话以及cookies常驻内存
     TEST_DIR = os.path.join(BASE_DIR, 'test')  # 测试路径
+    print("Test dir: ", TEST_DIR)
     if os.path.exists(TEST_DIR):  # 如果已存在测试路径，就清除
         print("Cleaning...", end='')
-        #shutil.rmtree(TEST_DIR)  # 清除data目录下所有的文件和目录
-        #os.mkdir(TEST_DIR)
+        # shutil.rmtree(TEST_DIR)  # 清除test目录下所有的文件和目录
+        # os.mkdir(TEST_DIR)
         print("Done")
     else:
         os.mkdir(TEST_DIR)
+
+    print("===== init client =====")
+    # client.start_client()  # 判断是否登录，最终返回结果是已登录并加载cookies
+    # client.check_login()
     os.chdir(TEST_DIR)
-    print("Test dir: ", TEST_DIR)
-    print("Done", end="\n\n")
+    print("Done")
 
     print("===== test start =====")
     try:  # 调用test()进入测试，直到测试完成
         time = timeit.timeit('test()', setup='from __main__ import test', number=1)
         print('===== test passed =====')
-        print('time used: {0} ms'.format(time * 1000))  # 计时
+        print('time used: {0} s'.format(time))  # 计时
     except Exception as e:
         print('===== test failed =====')
         raise e
+        pass
     finally:
         print("Done")
+
+    print("===== exit client =====")
+    os.chdir(BASE_DIR)
+    input("按Enter键退出")
+    client.exit_client()
+    print("Done")
