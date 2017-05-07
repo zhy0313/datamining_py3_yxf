@@ -14,7 +14,10 @@ import re
 # 知乎连续爬取时间间隔限制
 Time_Delay = 5
 
+
 # 知乎主站相关链接
+Domain = 'zhihu'
+Host = {'Host': 'www.zhihu.com'}  # 请求头信息中要加入host，通过update()更新
 Zhihu_URL = 'https://www.zhihu.com'  # 域名
 Zhihu_Login = 'https://www.zhihu.com/#signin'
 Zhihu_Login_Email = 'https://www.zhihu.com/login/email'
@@ -31,12 +34,10 @@ Question_Id = ''  # 问题id
 Answer_Id = ''
 
 # 网址解析正则规则
-re_phone_num_pattern = re.compile(r'^1\d{10}$')  # 匹配手机号
-re_topic_url = re.compile(r'^https?://www\.zhihu\.com/topic/(\d+)/?$')
-re_author_url = re.compile(r'')
-re_answer_url = re.compile(r'')
-re_question_url = re.compile(r'^https?://www\.zhihu\.com/question/\d+/?')  # 匹配问题链接。包括默认链接和按时间排序链接
-re_number_in_double_quotes_pattern = re.compile(r'\"\d\"')  # 匹配双引号中的数字
+re_topic_url_pattern = re.compile(r'^https?://www\.zhihu\.com/topic/(\d+)/?$')
+re_author_url_pattern = re.compile(r'')
+re_answer_url_pattern = re.compile(r'')
+re_question_url_pattern = re.compile(r'^https?://www\.zhihu\.com/question/\d+/?')  # 匹配问题链接。包括默认链接和按时间排序链接
 
 # 知乎网站内容模型
 Zhihu_Model = {

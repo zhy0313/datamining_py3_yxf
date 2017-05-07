@@ -2,6 +2,7 @@ setuptools
 pip
 pyodbc
 selenium
+twisted
 bs4
 requests
 termcolor

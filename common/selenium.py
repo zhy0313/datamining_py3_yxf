@@ -50,7 +50,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 """
 
 
-def load_driver(driver, load_image=True):
+def load_browser(driver, load_image=True):
     if driver == 'chrome':
         if load_image:
             browser = webdriver.Chrome()
@@ -79,6 +79,4 @@ def load_driver(driver, load_image=True):
         browser = webdriver.Firefox()
         return browser
     else:
-        print("Warning! You have set an invalid web driver!")
-
-
+        print("警告！没有这个浏览器引擎！")

@@ -16,12 +16,19 @@ import os
 import sys
 import json
 import re
+import threading
+import random
 import common.db as db
-database = db.SqlServer('127.0.0.1', '1433', 'sa', '201212', 'zhihu')
-id = "21373902"
-title = "\'""ansivurnv""\'"
-url = "\'""https://www.baidu.com/""\'"
-# database.check_item("topics",id)
-# database.update("topics","","id={0}".format(id))
-database.query("insert into topics(id) values(1234)",False)
+import threading
+import time
+import common.requests as requests
+import common.regx as regx
+import requests as req
+import common.data as data
+item = '8943728151'
+ll = []
+ll.append(item)
+print(ll[0])
+ll.remove(item)
+print(ll[0])
 print('================end test==================')

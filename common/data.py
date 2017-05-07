@@ -4,6 +4,7 @@
 """
     Note:
         封装数据处理代码。
+        主要处理cookies、json等数据。
         By Yanxingfei(1139),2016.08.10
 """
 
@@ -11,19 +12,28 @@
 import json
 
 
-def str_to_json(json_str):
-    # json_obj = json.loads(json.dumps(json_str))  # json解析有单双引号的问题，用这个式子可以解决。但最终输出并没有变化
-    json_obj = eval(json_str)  # 未知错误，json.loads()不能解析标准json格式？只能读取字符串，无法解析为对象。只能用eval形成对象
+def single_quote_json_str_to_python_obj(str):  # 输入单引号为边界的类json字符串（内部可能还有双引号），返回单引号为边界的python字典or列表对象。
+    json_obj = eval(str)  # 不能用内置函数解析。只能模拟执行。
     return json_obj  # dict or list
 
 
-def json_to_str(json_object):
+def json_str_to_python_obj(str):  # 输入完全正规的json字符串（键-值边界为双引号），返回单引号为边界的python字典or列表对象。
+    json_obj = json.loads(str)
+    return json_obj
+
+
+def python_obj_to_json_str(obj):  # 输入边界为单引号的类json对象（python列表或字典），返回边界为双引号的json字符串且双引号加斜杠转义。
+    json_str = json.dumps(obj)
+    return json_str
+
+
+def browser_cookies_to_dict(browser_cookies):
     pass
 
 
-def json_to_dict(json_object):
-    pass
-
-
-def dict_to_json(dict_object):
-    pass
+def iptext_to_python_dict(iptext):
+    list = iptext.split('\n')
+    json_list = []
+    for i in list:
+        json_list.append({"url": "{0}".format(i)})
+    return json_list

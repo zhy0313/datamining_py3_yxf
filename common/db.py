@@ -54,7 +54,7 @@ class SqlServer:
         rows = self._cursor.fetchall()
         return rows
 
-    def check_item(self, table, pk_id):  # 不能执行复杂语句（子查询等）
+    def check_item(self, table, pk_id):  # 不能执行复杂语句（子查询等）。根据id检查是否存在此记录，不存在则插入
         self._cursor.execute("select * from {0} where id={1}"
                              .format(table, pk_id))
         if self._cursor.fetchall():
@@ -64,7 +64,6 @@ class SqlServer:
                   .format(table, pk_id))
             self._cursor.execute("insert into {0}(id) values({1})"
                                  .format(table, pk_id))
-        # self._cursor.execute("if not exists(select id from {0} where id={1}) insert into {0}(id) where id={1}".format(table, pk_id))
 
     def update(self, table, keys_and_values, condition):
         print("SQL:update {0} set {1} where {2}"
@@ -78,13 +77,13 @@ class SqlServer:
 
     def commit(self):
         print("SQL:commit")
-        self._conn.commit()  # 更改内容的操作必须先提交
+        self._conn.commit()  # 插入、更新操作必须先提交才会生效
 
     def disconnect(self):
         self._conn.close()
 
 
-# 非关系数据库，以键值对存储，类似于json
-class Mongodb:
+# 虽然也是关系数据库，但扩展了对json格式的支持
+class PostgreSQL:
     def __init__(self):
         pass
